@@ -1,0 +1,14 @@
+openai 
+langchain 
+chromadb 
+tiktoken 
+unstructured 
+faiss-cpu
+sentence-transformers 
+transformers 
+scikit-learn
+pandas
+openpyxl
+requests
+python-dotenv
+ipykernel
