@@ -19,7 +19,7 @@ source venv/bin/activate
 3. Install dependencies:
 ```
 pip install -r requirements.txt
-pip install matplotlib seaborn
+pip install matplotlib seaborn scikit-learn
 ```
 
 ## Environment Variables
@@ -68,7 +68,7 @@ python cp2_extraction.py
 This script queries the Chicago Crimes API for each year from 2015 to 2024, filtering for five violent crime types (HOMICIDE, ROBBERY, CRIMINAL SEXUAL ASSAULT, AGGRAVATED ASSAULT, AGGRAVATED BATTERY) and groups results by police district.
 
 **Output:** `data/cp2_violent_crimes_by_district_year.csv`
-- 220 rows — 22 districts × 10 years
+- 220 rows — 22 districts x 10 years
 - Columns: `year`, `district`, `violent_crime_count`
 
 ### Step 2 — Run exploratory data analysis
@@ -80,10 +80,10 @@ This script reads the CSV produced in Step 1 and generates the following outputs
 **Plots** saved to `plots/`:
 | File | Description |
 |------|-------------|
-| `cp2_citywide_trend.png` | Citywide violent crime totals per year (2015–2024) |
-| `cp2_district_heatmap.png` | District × year heatmap of crime counts |
+| `cp2_citywide_trend.png` | Citywide violent crime totals per year (2015-2024) |
+| `cp2_district_heatmap.png` | District x year heatmap of crime counts |
 | `cp2_pre_post_2020.png` | Average annual crimes per district, pre vs post 2020 |
-| `cp2_pct_change.png` | % change in average crime by district, pre → post 2020 |
+| `cp2_pct_change.png` | % change in average crime by district, pre to post 2020 |
 
 **Summary table** saved to `data/cp2_eda_summary.csv`:
 - Per-district averages for pre-2020 and post-2020 periods
@@ -91,6 +91,49 @@ This script reads the CSV produced in Step 1 and generates the following outputs
 - Peak year and % change per district
 
 > **Note:** Run `cp2_extraction.py` before `cp2_eda.py`. Both scripts read your `SOCRATA_APP_TOKEN` from the `.env` file automatically.
+
+### Step 3 — Build the socioeconomic dataset
+```
+python cp3_socioeco.py
+```
+This script loads the Chicago Hardship Index (2008-2012 ACS, 77 community areas) and derives a community-area-to-police-district crosswalk directly from the Chicago Crimes API.
+
+**Outputs:**
+- `data/cp3_community_socioeco.csv` — per capita income, poverty rate, unemployment, education, and hardship index for each community area
+- `data/cp3_community_to_district.csv` — community area to police district mapping
+- `data/cp3_district_socioeco.csv` — socioeconomic indicators aggregated to district level
+
+### Step 4 — Merge into panel dataset
+```
+python cp3_merge.py
+```
+Merges the CP2 crime data with the district-level socioeconomic indicators to produce a district x year panel dataset.
+
+**Output:** `data/cp3_panel.csv`
+- 140 rows — 14 matched districts x 10 years
+- Columns: `year`, `district`, `violent_crime_count`, `per_capita_income`, `pct_poverty`, `pct_unemployed`, `pct_no_hs`, `hardship_index`, `post2020`
+
+> **Note:** Run `cp2_extraction.py` first, then `cp3_socioeco.py`, then `cp3_merge.py`.
+
+### Step 5 — Run statistical analysis
+```
+python cp3_analysis.py
+```
+Runs correlation analysis (split by pre/post-2020) and three OLS regression models including a structural break interaction test.
+
+**Plots** saved to `plots/`:
+| File | Description |
+|------|-------------|
+| `cp3_correlation_matrix.png` | Correlation matrix across all socioeconomic variables and crime |
+| `cp3_income_vs_crime.png` | Per capita income vs violent crime, pre vs post 2020 |
+| `cp3_poverty_vs_crime.png` | Poverty rate vs violent crime, pre vs post 2020 |
+| `cp3_hardship_vs_crime.png` | Hardship index vs violent crime, pre vs post 2020 |
+
+**Data outputs:**
+- `data/cp3_correlation_table.csv` — pre/post correlations and delta for each variable
+- `data/cp3_regression_results.txt` — OLS model coefficients and R-squared values
+
+**Key finding:** The relationship between socioeconomic conditions and violent crime weakened substantially after 2020. The hardship index correlation with crime dropped from +0.349 (pre-2020) to +0.072 (post-2020). Per capita income reversed sign from -0.241 to +0.120, suggesting the expected pattern of wealthier districts having less crime broke down post-2020.
 
 ## Assignment Deliverables
 Submit a short report describing your interaction with the system and the observations you made while using it.
