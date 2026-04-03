@@ -13,3 +13,6 @@ requests
 python-dotenv
 ipykernel
 statsmodels
+matplotlib
+seaborn
+numpy
