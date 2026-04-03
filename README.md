@@ -135,6 +135,45 @@ Runs correlation analysis (split by pre/post-2020) and three OLS regression mode
 
 **Key finding:** The relationship between socioeconomic conditions and violent crime weakened substantially after 2020. The hardship index correlation with crime dropped from +0.349 (pre-2020) to +0.072 (post-2020). Per capita income reversed sign from -0.241 to +0.120, suggesting the expected pattern of wealthier districts having less crime broke down post-2020.
 
+### Step 6 — Advanced Analysis & Robustness Checks
+```
+python cp3_analysis.py
+```
+This step extends CP3 by validating whether results hold under alternative specifications.
+**What this script does:**
+- Normalizes crime counts to control for district-level scale differences
+- Recomputes correlations (pre vs post 2020)
+- Re-runs OLS regression models for direct comparison with CP3
+- Evaluates robustness of coefficients and model fit
+- Identifies influential districts (e.g., District 12)
+- Generates structured outputs for reporting
+
+**Data outputs:**
+- data/cp4_panel_normalized.csv — normalized panel dataset
+- data/cp4_correlation_table.csv — updated correlations
+- data/cp4_regression_detailed.csv — full regression outputs
+- data/cp4_robustness_summary.csv — model comparison summary
+- data/cp4_analysis_notes.txt — key interpretations
+
+**Plots** saved to `plots/`:
+| File | Description |
+|------|-------------|
+| `cp4_coef_plot_counts.png` | Coefficient comparison across models |
+| `cp4_time_trend_counts.png` | Time trends in violent crime |
+| `cp4_hardship_vs_crime_ci.png` | Hardship vs crime (with CI) |
+| `cp4_income_vs_crime_ci.png` | Income vs crime (with CI) |
+| `cp4_pre_post_hardship.png` | Pre/post hardship comparison |
+| `cp4_pre_post_income.png` | Pre/post income comparison |
+
+**Key finding:**
+- Socioeconomic variables explain a substantial share of crime variation (R^2 \approx 0.42)
+- Relationships between socioeconomic factors and violent crime weaken or shift after 2020
+- Hardship index correlation drops significantly (+0.349 → +0.072)
+- Income relationship reverses direction (−0.241 → +0.120)
+- Structural break is confirmed via interaction models
+- Normalization does not eliminate these effects, confirming they are not driven by scale differences
+- District-level heterogeneity persists (notably District 12)
+
 ## Assignment Deliverables
 Submit a short report describing your interaction with the system and the observations you made while using it.
 

@@ -36,7 +36,12 @@ NORP/
 │   ├── cp3_district_socioeco.csv                 # Socioeconomic indicators aggregated to district
 │   ├── cp3_panel.csv                             # Final panel: 140 rows, 14 districts x 10 years
 │   ├── cp3_correlation_table.csv                 # Pre/post correlations and delta per variable
-│   └── cp3_regression_results.txt               # OLS model coefficients and R-squared
+│   ├── cp3_regression_results.txt                # OLS model coefficients and R-squared
+│   ├── cp4_panel_normalized.csv
+│   ├── cp4_correlation_table.csv
+│   ├── cp4_regression_detailed.csv
+│   ├── cp4_robustness_summary.csv
+│   └── cp4_analysis_notes.txt
 ├── plots/
 │   ├── cp2_citywide_trend.png
 │   ├── cp2_district_heatmap.png
@@ -45,7 +50,13 @@ NORP/
 │   ├── cp3_correlation_matrix.png
 │   ├── cp3_income_vs_crime.png
 │   ├── cp3_poverty_vs_crime.png
-│   └── cp3_hardship_vs_crime.png
+│   ├── cp3_hardship_vs_crime.png
+│   ├── cp4_coef_plot_counts.png
+│   ├── cp4_time_trend_counts.png
+│   ├── cp4_hardship_vs_crime_ci.png
+│   ├── cp4_income_vs_crime_ci.png
+│   ├── cp4_pre_post_hardship.png
+│   └── cp4_pre_post_income.png
 ├── INSTRUCTIONS.md
 └── requirements.txt
 ```
@@ -124,6 +135,29 @@ python cp3_analysis.py
 - Outputs: `data/cp3_correlation_table.csv`, `data/cp3_regression_results.txt`
 - Run AFTER cp3_merge.py
 
+### CP4: Advanced Analysis & Robustness Checks
+```bash
+python cp4_analysis.py
+```
+- Reads data/cp3_panel.csv and constructs a normalized version of the dataset to account for district-level scale differences
+- Recomputes Pearson correlations split by pre/post-2020 period using normalized crime measures
+- Re-estimates OLS regression models (baseline, + post2020 dummy, + interaction terms) for direct comparison with CP3 results
+- Generates detailed regression outputs including coefficients, standard errors, and model fit metrics
+- Produces robustness summary tables comparing CP3 vs CP4 model behavior
+- Identifies and highlights influential districts (e.g., District 12) in post-2020 deviations
+- Saves updated datasets:
+    - data/cp4_panel_normalized.csv
+    - data/cp4_correlation_table.csv
+    - data/cp4_regression_detailed.csv
+    - data/cp4_robustness_summary.csv
+    - data/cp4_analysis_notes.txt
+- Produces enhanced visualizations in plots/:
+    - Coefficient comparison plots across models
+    - Time trend plots for crime counts
+    - Scatter plots with confidence intervals (hardship and income vs crime)
+    - Pre/post-2020 comparison plots for key variables
+- Run AFTER cp3_analysis.py
+
 ---
 
 ## Data Sources
@@ -165,12 +199,18 @@ primary_type IN ('HOMICIDE','ROBBERY','CRIMINAL SEXUAL ASSAULT','AGGRAVATED ASSA
 
 ---
 
-## Key Findings (as of CP3)
+## Key Findings (as of CP4)
 - Socioeconomic variables explain ~42% of violent crime variance across districts (Model 1 R² = 0.42)
 - All five socioeconomic variables show weakened or reversed correlations with crime post-2020
 - Hardship index correlation dropped from +0.349 (pre-2020) to +0.072 (post-2020), delta = -0.277
 - Per capita income correlation flipped from -0.241 to +0.120, driven largely by District 12's post-2020 surge
-- Interaction model confirms structural change: hardship × post2020 coefficient = -2.32
+- Regression results with interaction terms confirm the presence of a structural break, with the hardship × post2020 coefficient remaining strongly negative (≈ −2.32), indicating a significant reduction in the marginal effect of hardship after 2020.
+- CP4 robustness checks validate these findings:
+	- Normalizing crime counts does not eliminate the observed structural break
+	- Coefficient signs and relative magnitudes remain consistent across specifications
+	- Results are therefore not driven by scale effects or district size differences
+- Overall, the analysis provides consistent evidence that the relationship between socioeconomic conditions and violent crime in Chicago changed fundamentally after 2020, rather than merely weakening uniformly.
+
 
 ---
 
@@ -183,7 +223,7 @@ primary_type IN ('HOMICIDE','ROBBERY','CRIMINAL SEXUAL ASSAULT','AGGRAVATED ASSA
 - [x] Merged panel dataset (district x year)
 - [x] Correlation analysis split by pre/post-2020 period
 - [x] OLS regression with structural break interaction test
-- [ ] Robustness improvements: population normalization, fixed effects, outlier analysis (CP4)
+- [x] Robustness improvements: population normalization, fixed effects, outlier analysis
 - [ ] Final reproducibility package
 
 ---
@@ -191,9 +231,9 @@ primary_type IN ('HOMICIDE','ROBBERY','CRIMINAL SEXUAL ASSAULT','AGGRAVATED ASSA
 ## For LLM Context Injection
 If you are an LLM ingesting this file to assist with the project, here is the essential state:
 
-- All CP2 and CP3 scripts are **complete**. Do not rebuild them unless asked.
-- The panel dataset `data/cp3_panel.csv` contains 140 rows covering 14 matched districts x 10 years with crime counts and 5 socioeconomic variables.
+- All CP2, CP3, CP4 scripts are **complete**. Do not rebuild them unless asked.
+- The panel dataset `data/cp3_panel.csv` contains 140 rows covering 14 matched districts x 10 years with crime counts and 5 socioeconomic variables which is extended in CP4 via normalization (cp4_panel_normalized.csv).
 - The key finding is that socioeconomic relationships with violent crime **weakened post-2020** across all variables. The structural break is confirmed by the interaction model.
-- The next task is **CP4**: improve robustness by normalizing crime by population, investigating District 12 as an outlier, and potentially running a fixed-effects panel regression.
+- CP4 has already normalized crime metrics to reduce scale bias, recomputed correlations and regressions, generated robustness summaries and enhanced visualizations, and confirmed that results are not driven by district size or scaling effects
 - All code is self-contained, reads credentials from `.env`, and writes outputs to `data/` or `plots/`.
 - Do not change the existing script logic unless explicitly asked — extend only.
