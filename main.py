@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 
 # API Information
 API_URL = "https://openrouter.ai/api/v1/chat/completions"
-MODEL = "mistralai/devstral-2512:free"
+MODEL = "openai/gpt-oss-20b:free"
 
 def print_chunk_as_row(chunk):
     lines = [ln for ln in chunk.splitlines() if ln.strip()]
